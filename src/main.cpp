@@ -1,4 +1,3 @@
-
 /*
 Características:
 Una entrada AD.
@@ -21,6 +20,8 @@ Amplio rango de entrada de voltaje: DC 5V -12V
 Corriente de carga: 500 mA
 Tamaño: 10,3x3cm/4,06x1,18"
 Tamaño de la pantalla: 0,96 pulgadas
+
+https://www.studiopieters.nl/esp8266-pinout/
 */
 
 #include <Arduino.h>
@@ -30,12 +31,12 @@ Tamaño de la pantalla: 0,96 pulgadas
 #include "SSD1306.h"
 // Update these with values suitable for your network.
 
-const char *ssid = "****";
-const char *password = "****";
-const char *mqtt_server = "****";
+const char *ssid = "***";
+const char *password = "***";
+const char *mqtt_server = "192.168.*.**";
 const int mqttPort = 1883;
-const char *mqttUser = "****";
-const char *mqttPassword = "****";
+const char *mqttUser = "***";
+const char *mqttPassword = "**";
 
 char *Nombre = "Mando";
 
@@ -76,7 +77,7 @@ void setup_wifi()
   {
     delay(500);
     Serial.print(".");
-
+    
     display.setFont(ArialMT_Plain_24);
     display.drawString(0 + (t * 15), 10, "O");
     t++;
@@ -96,6 +97,7 @@ void setup_wifi()
   display.display();
   display.clear();
   display.display();
+
 }
 
 void callback(char *topic, byte *payload, unsigned int length)
@@ -113,9 +115,21 @@ void callback(char *topic, byte *payload, unsigned int length)
 
   String myString = String((char *)payload);
 
+  String consumo_diario = "Con :";
+  String potencia_usada = "Pot :";
+
+  String primer_corte = myString.substring(myString.indexOf('\'')+1);
+  String segundo_corte = primer_corte.substring(primer_corte.indexOf('\'')+4); 
+  int index1 = (primer_corte.indexOf('\''));  
+  int index2 = (segundo_corte.indexOf('\''));  
+  consumo_diario = consumo_diario + primer_corte.substring(0, index1);
+  potencia_usada = potencia_usada + segundo_corte.substring(0, index2);
+
   display.clear();
   display.setFont(ArialMT_Plain_24);
-  display.drawString(30, 10, myString);
+  display.drawString(0, 10, potencia_usada);
+  display.drawString(0, 30, consumo_diario);
+  
   display.display();
 }
 
@@ -133,7 +147,7 @@ void reconnect()
       // client.publish("outTopic", "hello world");
       // ... and resubscribe
 
-      // client.subscribe("shellies/shellyem-C45BBE793C1C/emeter/0/power");
+      //client.subscribe("shellies/shellyem-C45BBE793C1C/emeter/0/power");
       client.subscribe("homeassistant/energia/state");
     }
     else
